@@ -8,52 +8,239 @@
 
 import UIKit
 
+let kRecover : Int = 1
+let kLogin   : Int = 2
+let kSignup  : Int = 3
+let kBack    : Int = 4
+
+
+extension UIColor{
+    
+    class func emeraldGreen()-> UIColor{
+        return UIColor(red: 30/255, green: 177/255, blue: 137/255, alpha: 1.0)
+    }
+    
+    class func pastelGreen()-> UIColor{
+        return UIColor(red: 42/255, green: 197/255, blue: 93/255 , alpha: 1.0)
+    }
+    
+    class func azure()-> UIColor{
+        return UIColor(red: 44/255, green: 132/255, blue: 210/255, alpha: 1.0)
+    }
+    
+    class func darkBlue()-> UIColor{
+        return UIColor(red: 40/255, green: 56/255 , blue: 75/255 , alpha: 1.0)
+    }
+    
+    class func celadonGreen()-> UIColor{
+        return UIColor(red: 25/255, green: 145/255 ,blue: 115/255, alpha: 1.0)
+    }
+}
+
 class MenuTableViewCell: UITableViewCell{
     @IBOutlet weak var titleTextField: UITextField!
 }
 
-class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class ViewController: UIViewController {
 
-    enum MenuType: Int{
-        case Signup = 0 ,Login = 1,  Recover = 2, Main = 10, YO
-    }
-    
+    @IBOutlet weak var menuButton: UIButton!
     @IBOutlet weak var tableView: UITableView!
     
-    let main   :Array<(title: String, inputEnable: Bool)> = [("SIGNUP",false),("LOGIN",false),("RECOVER PASS",false)]
-    let signup :Array<(title: String, inputEnable: Bool)> = [("CHOOSE USERNAME",true),("CHOOSE PASSCODE",true),("ENTER EMAIL",true),("TAP TO SIGNUP",false),("GO BACK",false)]
-    let login  :Array<(title: String, inputEnable: Bool)> = [("USERNAME",true),("PASSCODE",true),("TAP TO LOGIN",false),("GO BACK",false)]
-    let recover:Array<(title: String, inputEnable: Bool)> = [("USERNAME",true),("TAP TO RECOVER",false),("GO BACK",false)]
-    let sendYo :Array<(title: String, inputEnable: Bool)> = [("USERNAME",true),("TAP TO YO",false)]
+    let colors:[UIColor] = [UIColor.emeraldGreen(), UIColor.pastelGreen(), UIColor.azure(), UIColor.darkBlue(), UIColor.celadonGreen()]
     
     var model = Array<(title: String, inputEnable: Bool)>()
+    let menusModel = MenusModel()
     
-    let colors:Array<UIColor> = [UIColor(red: 30/255, green: 177/255, blue: 137/255, alpha: 1.0),
-                                 UIColor(red: 42/255, green: 197/255, blue: 93/255 , alpha: 1.0),
-                                 UIColor(red: 44/255, green: 132/255, blue: 210/255, alpha: 1.0),
-                                 UIColor(red: 40/255, green: 56/255 , blue: 75/255 , alpha: 1.0),
-                                 UIColor(red: 25/255, green: 145/255 ,blue: 115/255, alpha: 1.0)]
+    var menuType: MenuType = MenuType.Main {
+        willSet(newValue) {
+            model = menusModel.getMenu(newValue)
+        }
+        didSet{
+            if menuType.rawValue < oldValue.rawValue{
+                tableView.reloadSections(NSIndexSet(index: 0), withRowAnimation: .Right)
+            }
+            else{
+                tableView.reloadSections(NSIndexSet(index: 0), withRowAnimation: .Left)
+            }
+        }
+    }
     
-    var menuType = MenuType.Main
-    
-    //pragma mark: - Life cycle
+    //MARK: - Life cycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        model = main
+        
+        if (PFUser.currentUser() != nil){
+           menuType = MenuType.YO
+        }
+        else{
+           menuType = MenuType.Main
+        }
     }
     
     override func prefersStatusBarHidden() -> Bool {
         return true;
     }
     
-    //pragma mark: - UITableViewDataSource
+    //MARK: - Private methods
+    func clearUsername(){
+        
+        if let usernameCell = tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 0)) as? MenuTableViewCell{
+            usernameCell.titleTextField.text = ""
+        }
+    }
+    
+    func getUserInputs() -> (username: String?, password: String?, email: String?){
+        
+        var inputs = [String?](count: 3, repeatedValue: nil)
+        
+        for index in 0...2{
+            if let cell = tableView.cellForRowAtIndexPath(NSIndexPath(forRow: index, inSection: 0)) as? MenuTableViewCell where cell.titleTextField.enabled, let input = cell.titleTextField.text where !input.isEmpty{
+                inputs[index] = input
+            }
+        }
+        
+        return (inputs[0], inputs[1], inputs[2])
+    }
+    
+    func userConnected(){
+        self.menuType = .YO
+    }
+    
+    func userConnectedFailure(error: NSError){
+        
+        let errorMsg = error.userInfo![kErrorMessageKey] as! String?
+        
+        let alert = UIAlertController(title: "Connection Failed", message: errorMsg , preferredStyle: .Alert)
+        alert.addAction(UIAlertAction(title: "Dissmis", style: .Default, handler: nil))
+        presentViewController(alert, animated: true, completion: nil)
+    }
+    
+    func sendYO(){
+        
+        if let username = getUserInputs().username{
+            
+            ServerUtility.sentYO(username, callbackClosure: { (error: NSError?) -> () in
+                
+                if let errorSendYo = error{
+                    
+                    let errorUserMeesage: String
+                    if errorSendYo.code == kUserNotFound{
+                        if let errorMsg = errorSendYo.userInfo?[kErrorMessageKey] as! String?{
+                            errorUserMeesage = errorMsg
+                        }
+                        else{
+                            errorUserMeesage = "Your YO isn't sent, The username '\(username)' not found"
+                        }
+                    }
+                    else{
+                        errorUserMeesage = "There was an error, your YO isn't sent"
+                    }
+                    
+                    var alert = UIAlertController(title: "YO Error", message: errorUserMeesage, preferredStyle: .Alert)
+                    alert.addAction(UIAlertAction(title: "Dissmis", style: .Default, handler: nil))
+                    self.presentViewController(alert, animated: true, completion: nil)
+                }
+                else{
+                    self.clearUsername()
+                }
+            })
+        }
+    }
+    
+    func recoverPassword(){
+        
+        var alert = UIAlertController(title: "YO Password Reminder", message: "Please confirm your username and we will send you email for resetting your password.", preferredStyle: .Alert)
+        alert.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
+        alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: { (alertAction:UIAlertAction!) -> Void in
+            
+           
+            if let textField = alert.textFields?.first as? UITextField{
+                ServerUtility.sendResetPasswordMail(textField.text, callbackClosure: { (succeeded, error) -> () in
+                    
+                    if let errorResetPassword = error {
+                        var alert = UIAlertController(title: "YO Error", message: errorResetPassword.userInfo?["user"] as? String, preferredStyle: .Alert)
+                        alert.addAction(UIAlertAction(title: "Dismiss", style: .Default, handler: nil))
+                        self.presentViewController(alert, animated: true, completion: nil)
+                    }
+                    else{
+                        self.menuType = .Main
+                    }
+                })
+            }
+        }))
+        
+        alert.addTextFieldWithConfigurationHandler { (textfield: UITextField!) -> Void in
+            textfield.text = self.getUserInputs().username
+        }
+        presentViewController(alert, animated: true, completion: nil)
+    }
+    
+    func login(){
+        let (username, password, _) = getUserInputs()
+        if let user = username, let pass = password{
+            ServerUtility.login(user, password: pass, successClosure:userConnected, failureClosure: userConnectedFailure)
+        }
+    }
+    
+    func signup(){
+        let (username, password, email) = getUserInputs()
+        if let user = username, let pass = password, let userEmail = email  {
+            ServerUtility.signUp(user, password: pass,email:userEmail, successClosure: userConnected, failureClosure: userConnectedFailure)
+        }
+    }
+    
+    func logout(){
+        ServerUtility.logout()
+        self.menuType = .Main
+    }
+}
+
+extension ViewController: UITableViewDelegate{
+    
+    //MARK: - UITableViewDelegate
+    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath){
+        
+        switch (menuType, indexPath.row)
+        {
+        case (.Main, _):
+            menuType = MenuType(rawValue: indexPath.row)!
+        case (.Signup, kSignup):
+            signup()
+        case (.Login,kLogin):
+            login()
+        case (.Recover,kRecover):
+            recoverPassword()
+        case (.YO,_):
+            sendYO()
+        default:
+            menuType = .Main
+        }
+    }
+    
+    //MARK: - IBAction    
+    @IBAction func logoutButtonAction(sender: UIButton) {
+    
+        var actionSheet = UIAlertController(title: "YO Logout", message: "Do you sure you want to log out?", preferredStyle: .ActionSheet)
+        actionSheet.addAction(UIAlertAction(title: "Logout", style: UIAlertActionStyle.Destructive, handler: { (alertAction: UIAlertAction!) -> Void in
+            self.logout()
+        }))
+        
+        actionSheet.addAction(UIAlertAction(title: "Cancel", style: UIAlertActionStyle.Cancel, handler: nil))
+        
+        presentViewController(actionSheet, animated: true, completion: nil)
+    }
+}
+
+extension ViewController: UITableViewDataSource{
+
+    //MARK: - UITableViewDataSource
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int{
         return model.count
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell{
         
-        let cell = tableView.dequeueReusableCellWithIdentifier("cellReuseIdentifier", forIndexPath: indexPath) as MenuTableViewCell
+        let cell = tableView.dequeueReusableCellWithIdentifier("cellReuseIdentifier", forIndexPath: indexPath) as! MenuTableViewCell
         
         cell.titleTextField.textColor = UIColor.whiteColor()
         cell.titleTextField.enabled = model[indexPath.row].inputEnable
@@ -70,177 +257,27 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         cell.backgroundColor = colors[indexPath.row]
         return cell;
     }
-    
-    //pragma mark: - UITableViewDelegate
-    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath){
-        
-        switch menuType
-        {
-            case .Main:
-                mainMenuHandle(indexPath)
-            case .Signup:
-                signupMenuHandle(indexPath)
-            case .Login:
-                loginMenuHandle(indexPath)
-            case .Recover:
-                recoverMenuHandle(indexPath)
-            case .YO:
-                yoMenuHandle(indexPath)
-            default:
-                println("kajshd")
-        }
-    }
-    
-    //pragma mark: - Private method
-    func mainMenuHandle(indexPath: NSIndexPath){
-        
-        switch indexPath.row{
-        
-            case 0 ://signup
-                menuType = .Signup
-                model = signup
-                tableView.reloadSections(NSIndexSet(index: 0), withRowAnimation: .Left)
-            case 1://login
-                menuType = .Login
-                model = login
-                tableView.reloadSections(NSIndexSet(index: 0), withRowAnimation: .Left)
-            case 2://recover
-                menuType = .Recover
-                model = recover
-                tableView.reloadSections(NSIndexSet(index: 0), withRowAnimation: .Left)
-            default:
-                menuType = .Main
-                model = main
-        }
-    }
-    
-    func signupMenuHandle(indexPath: NSIndexPath){
-        
-        switch indexPath.row{
-        case 3://Tap To signup
-           println("Tap tp signup")
-           //Todo - Call to parse sign up.
-//           let successClosure:()->() = {
-//            
-//           }
-//
-//           var failureClosure: (error:NSError) -> () = {
-//            
-//           }
-           
-           let usernameCell = tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 0)) as MenuTableViewCell
-           let passwordCell = tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 1, inSection: 0)) as MenuTableViewCell
-          
-           let username = usernameCell.titleTextField.text
-           let password = passwordCell.titleTextField.text
-           
-           if !username.isEmpty && !password.isEmpty{
-                self.signUp(usernameCell.titleTextField.text, password: passwordCell.titleTextField.text, successClosure: { () -> () in
-                    
-                    self.menuType = .YO
-                    self.model = self.sendYo
-                    self.tableView.reloadSections(NSIndexSet(index: 0), withRowAnimation: .Left)
-                    
-                    }, failureClosure: { (error) -> () in
-                        println("\(error)")
-                })
-           }
-        case 4://Back
-            menuType = .Main
-            model = main
-            tableView.reloadSections(NSIndexSet(index: 0), withRowAnimation: .Right)
-        default:
-            menuType = .Main
-            model = main
-        }
-    }
-    
-    func loginMenuHandle(indexPath: NSIndexPath){
-        
-        switch indexPath.row{
-        case 2://login
-            
-            let usernameCell = tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 0)) as MenuTableViewCell
-            let passwordCell = tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 1, inSection: 0)) as MenuTableViewCell
-            
-            let username = usernameCell.titleTextField.text
-            let password = passwordCell.titleTextField.text
-            
-            if !username.isEmpty && !password.isEmpty{
-                self.login(usernameCell.titleTextField.text, password: passwordCell.titleTextField.text, successClosure: { () -> () in
-                    
-                    self.menuType = .YO
-                    self.model = self.sendYo
-                    self.tableView.reloadSections(NSIndexSet(index: 0), withRowAnimation: .Left)
-                    
-                    }, failureClosure: { (error) -> () in
-                        println("\(error)")
-                })
-            }
-            
-        case 3://Back
-            menuType = .Main
-            model = main
-            tableView.reloadSections(NSIndexSet(index: 0), withRowAnimation: .Right)
-        default:
-            menuType = .Main
-            model = main
-        }
-    }
-    
-    func recoverMenuHandle(indexPath: NSIndexPath){
-        
-        switch indexPath.row{
-        case 1://Tap to recover
-            let usernameCell = tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 0)) as MenuTableViewCell
-            println("\(usernameCell.titleTextField.text)")
-        case 2://Back
-            menuType = .Main
-            model = main
-            tableView.reloadSections(NSIndexSet(index: 0), withRowAnimation: .Right)
-        default:
-            menuType = .Main
-            model = main
-        }
-    }
-    
-    func yoMenuHandle(indexPath: NSIndexPath){
-        
-        switch indexPath.row{
-        case 1://send yo
-            menuType = .Main
-            model = main
-            tableView.reloadSections(NSIndexSet(index: 0), withRowAnimation: .Right)
-        default:
-            println("")
-        }
-    }
-    
-    func login(username:String, password:String, successClosure:()->(), failureClosure:(error: NSError) -> ()){
-        
-        PFUser.logInWithUsernameInBackground(username, password:password) {
-            (user: PFUser!, error: NSError!) -> Void in
-            if user != nil {
-                successClosure()
-            } else {
-                failureClosure(error: error)
-            }
-        }
-    }
-    
-    func signUp(username:String, password:String, successClosure:()->(), failureClosure:(error: NSError) -> ()){
-        
-        var user = PFUser()
-        user.username = username
-        user.password = password
-        user.signUpInBackgroundWithBlock {
-            (succeeded: Bool!, error: NSError!) -> Void in
-            if error == nil {
-                successClosure()
-            } else {
-                failureClosure(error: error)
-            }
-        }
-    }
 }
 
+extension ViewController: UITextFieldDelegate{
+    
+    //MARK: - UITextFieldDelegate
+    func textField(textField: UITextField, shouldChangeCharactersInRange range: NSRange, replacementString string: String) -> Bool {
+        
+        if string == ""{
+            return true
+        }
+        
+        var characterSet:NSCharacterSet = NSCharacterSet(charactersInString: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLKMNOPQRSTUVWXYZ0123456789@.")
+
+        if ((string as NSString).rangeOfCharacterFromSet(characterSet).location != NSNotFound ){
+            
+            let start = advance(textField.text.startIndex, range.location)
+            let end = advance(start, range.length)
+            let textRange = Range<String.Index>(start: start, end: end)
+            textField.text = textField.text.stringByReplacingCharactersInRange(textRange, withString: string.uppercaseString)
+        }
+        
+        return false
+    }
+}

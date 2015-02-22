@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="6221" systemVersion="14B25" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="vXZ-lx-hvc">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="7515.2" systemVersion="14C109" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="vXZ-lx-hvc">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6213"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7512"/>
         <capability name="Alignment constraints with different attributes" minToolsVersion="5.1"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
@@ -33,6 +33,9 @@
                                                     <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                     <fontDescription key="fontDescription" type="boldSystem" pointSize="37"/>
                                                     <textInputTraits key="textInputTraits"/>
+                                                    <connections>
+                                                        <outlet property="delegate" destination="vXZ-lx-hvc" id="Soa-mf-1uz"/>
+                                                    </connections>
                                                 </textField>
                                             </subviews>
                                             <constraints>
@@ -91,20 +94,59 @@
                                     <outlet property="delegate" destination="vXZ-lx-hvc" id="h3O-ZI-AP0"/>
                                 </connections>
                             </tableView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="TQr-rS-adE">
+                                <rect key="frame" x="-23" y="-15" width="46" height="30"/>
+                                <color key="backgroundColor" red="0.88235294119999996" green="0.20784313730000001" blue="0.18823529410000001" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="Xc9-tj-Xbb"/>
+                                    <constraint firstAttribute="width" constant="50" id="d9v-r8-05B"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="23"/>
+                                <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <state key="normal" image="exit"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="25"/>
+                                    </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.borderWidth">
+                                        <integer key="value" value="0"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                                <variation key="default">
+                                    <mask key="constraints">
+                                        <exclude reference="Xc9-tj-Xbb"/>
+                                        <exclude reference="d9v-r8-05B"/>
+                                    </mask>
+                                </variation>
+                                <variation key="heightClass=regular-widthClass=compact">
+                                    <mask key="constraints">
+                                        <include reference="Xc9-tj-Xbb"/>
+                                        <include reference="d9v-r8-05B"/>
+                                    </mask>
+                                </variation>
+                                <connections>
+                                    <action selector="logoutButtonAction:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="MuA-wK-gMv"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="0.52941176469999995" green="0.25098039220000001" blue="0.66274509800000003" alpha="1" colorSpace="calibratedRGB"/>
                         <constraints>
                             <constraint firstItem="2fi-mo-0CV" firstAttribute="top" secondItem="o4D-MX-YXL" secondAttribute="bottom" id="7qs-n2-Bhe"/>
                             <constraint firstAttribute="trailingMargin" secondItem="o4D-MX-YXL" secondAttribute="trailing" constant="-16" id="ISs-QN-b0l"/>
+                            <constraint firstItem="2fi-mo-0CV" firstAttribute="top" secondItem="TQr-rS-adE" secondAttribute="bottom" constant="8" id="PNF-7n-Hcy"/>
                             <constraint firstItem="o4D-MX-YXL" firstAttribute="leading" secondItem="kh9-bI-dsS" secondAttribute="leadingMargin" constant="-16" id="kbO-PW-l4z"/>
                             <constraint firstItem="o4D-MX-YXL" firstAttribute="top" secondItem="kh9-bI-dsS" secondAttribute="topMargin" id="riE-0b-Ruu"/>
+                            <constraint firstItem="TQr-rS-adE" firstAttribute="trailing" secondItem="kh9-bI-dsS" secondAttribute="trailingMargin" id="twX-b8-cji"/>
                         </constraints>
                         <variation key="default">
                             <mask key="subviews">
                                 <exclude reference="o4D-MX-YXL"/>
+                                <exclude reference="TQr-rS-adE"/>
                             </mask>
                             <mask key="constraints">
                                 <exclude reference="7qs-n2-Bhe"/>
+                                <exclude reference="PNF-7n-Hcy"/>
+                                <exclude reference="twX-b8-cji"/>
                                 <exclude reference="ISs-QN-b0l"/>
                                 <exclude reference="kbO-PW-l4z"/>
                                 <exclude reference="riE-0b-Ruu"/>
@@ -113,9 +155,12 @@
                         <variation key="heightClass=regular-widthClass=compact">
                             <mask key="subviews">
                                 <include reference="o4D-MX-YXL"/>
+                                <include reference="TQr-rS-adE"/>
                             </mask>
                             <mask key="constraints">
                                 <include reference="7qs-n2-Bhe"/>
+                                <include reference="PNF-7n-Hcy"/>
+                                <include reference="twX-b8-cji"/>
                                 <include reference="ISs-QN-b0l"/>
                                 <include reference="kbO-PW-l4z"/>
                                 <include reference="riE-0b-Ruu"/>
@@ -123,6 +168,7 @@
                         </variation>
                     </view>
                     <connections>
+                        <outlet property="menuButton" destination="TQr-rS-adE" id="mdV-mb-rtB"/>
                         <outlet property="tableView" destination="o4D-MX-YXL" id="9dX-xH-haa"/>
                     </connections>
                 </viewController>
@@ -131,4 +177,7 @@
             <point key="canvasLocation" x="172.5" y="382.5"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="exit" width="25" height="25"/>
+    </resources>
 </document>
