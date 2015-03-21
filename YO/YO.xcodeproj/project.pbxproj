@@ -39,6 +39,7 @@
 		507C28D91A66D92100D52AFC /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 507C28D81A66D92100D52AFC /* Images.xcassets */; };
 		507C28DC1A66D92100D52AFC /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 507C28DA1A66D92100D52AFC /* LaunchScreen.xib */; };
 		507C28E81A66D92200D52AFC /* YOTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 507C28E71A66D92200D52AFC /* YOTests.swift */; };
+		50BEED0E1ABDAE830064BCBB /* YOTableTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50BEED0D1ABDAE830064BCBB /* YOTableTableViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -89,6 +90,7 @@
 		507C28E11A66D92200D52AFC /* YOTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = YOTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		507C28E61A66D92200D52AFC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		507C28E71A66D92200D52AFC /* YOTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YOTests.swift; sourceTree = "<group>"; };
+		50BEED0D1ABDAE830064BCBB /* YOTableTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YOTableTableViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -152,6 +154,7 @@
 			isa = PBXGroup;
 			children = (
 				507C28D31A66D92100D52AFC /* ViewController.swift */,
+				50BEED0D1ABDAE830064BCBB /* YOTableTableViewController.swift */,
 			);
 			name = Controller;
 			sourceTree = "<group>";
@@ -228,8 +231,8 @@
 		507C28CF1A66D92100D52AFC /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				507C28DA1A66D92100D52AFC /* LaunchScreen.xib */,
 				507C28D81A66D92100D52AFC /* Images.xcassets */,
+				507C28DA1A66D92100D52AFC /* LaunchScreen.xib */,
 				507C28D11A66D92100D52AFC /* AppDelegate.swift */,
 				1AE9488D1A8B4349003EAB6D /* YO.caf */,
 				1A193C7C1A67C99D00E6BE1E /* YO-Bridging-Header.h */,
@@ -359,6 +362,7 @@
 			files = (
 				1AA7C82D1A89023F0084FC78 /* ServerUtility.swift in Sources */,
 				1AA7C82B1A889E3F0084FC78 /* MenusModel.swift in Sources */,
+				50BEED0E1ABDAE830064BCBB /* YOTableTableViewController.swift in Sources */,
 				507C28D41A66D92100D52AFC /* ViewController.swift in Sources */,
 				507C28D21A66D92100D52AFC /* AppDelegate.swift in Sources */,
 			);

@@ -6,8 +6,6 @@
 //  Copyright (c) 2015 GuyKahlon. All rights reserved.
 //
 
-import UIKit
-
 let kUserNotFound    : Int = 999
 let kErrorMessageKey : String = "error"
 
@@ -29,10 +27,10 @@ class ServerUtility {
         user.password = password
         user.email = email
         
-        user.signUpInBackgroundWithBlock {(succeeded: Bool!, error: NSError!) -> Void in
+        user.signUpInBackgroundWithBlock { (succeeded: Bool, error: NSError!) -> Void in
             if error == nil {
                 successClosure()
-                self.registerUserToPushNotification()                
+                self.registerUserToPushNotification()
             } else {
                 failureClosure(error: error)
             }
@@ -53,16 +51,17 @@ class ServerUtility {
     }
     
     class func sentYO(username: String, callbackClosure:(error: NSError?)->()){
-        
         var userQuery = PFUser.query()
         userQuery.whereKey("username", equalTo: username)
         userQuery.findObjectsInBackgroundWithBlock { (users: [AnyObject]!, error: NSError!) -> Void in
-            
             if error != nil {
                 callbackClosure(error: error)
             }
             else if users.count < 1{
-                callbackClosure(error: NSError(domain: "Send YO", code: kUserNotFound, userInfo: [kErrorMessageKey : "The username '\(username)' not found"]))
+                callbackClosure(
+                    error: NSError(domain: "Send YO",
+                    code: kUserNotFound,
+                    userInfo: [kErrorMessageKey: "The username '\(username)' not found"]))
             }
             else{                
                 // Find devices associated with these users
@@ -94,7 +93,6 @@ class ServerUtility {
     }
     
     class func currentUser() -> PFUser?{
-        
         return PFUser.currentUser()
     }
     

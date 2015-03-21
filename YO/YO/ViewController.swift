@@ -42,13 +42,19 @@ class MenuTableViewCell: UITableViewCell{
 }
 
 class ViewController: UIViewController {
-
-    @IBOutlet weak var menuButton: UIButton!
-    @IBOutlet weak var tableView: UITableView!
     
+    @IBOutlet weak var tableView: UITableView!{
+        didSet{
+            tableView.dataSource = self
+            tableView.delegate = self
+        }
+    }
+    
+    @IBOutlet weak var menuButton: UIButton!
     let colors:[UIColor] = [UIColor.emeraldGreen(), UIColor.pastelGreen(), UIColor.azure(), UIColor.darkBlue(), UIColor.celadonGreen()]
     
     var model = Array<(title: String, inputEnable: Bool)>()
+    
     let menusModel = MenusModel()
     
     var menuType: MenuType = MenuType.Main {
@@ -57,10 +63,10 @@ class ViewController: UIViewController {
         }
         didSet{
             if menuType.rawValue < oldValue.rawValue{
-                tableView.reloadSections(NSIndexSet(index: 0), withRowAnimation: .Right)
+                tableView?.reloadSections(NSIndexSet(index: 0), withRowAnimation: .Right)
             }
             else{
-                tableView.reloadSections(NSIndexSet(index: 0), withRowAnimation: .Left)
+                tableView?.reloadSections(NSIndexSet(index: 0), withRowAnimation: .Left)
             }
         }
     }
@@ -83,22 +89,18 @@ class ViewController: UIViewController {
     
     //MARK: - Private methods
     func clearUsername(){
-        
         if let usernameCell = tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 0)) as? MenuTableViewCell{
             usernameCell.titleTextField.text = ""
         }
     }
     
     func getUserInputs() -> (username: String?, password: String?, email: String?){
-        
         var inputs = [String?](count: 3, repeatedValue: nil)
-        
         for index in 0...2{
             if let cell = tableView.cellForRowAtIndexPath(NSIndexPath(forRow: index, inSection: 0)) as? MenuTableViewCell where cell.titleTextField.enabled, let input = cell.titleTextField.text where !input.isEmpty{
                 inputs[index] = input
             }
         }
-        
         return (inputs[0], inputs[1], inputs[2])
     }
     
@@ -116,13 +118,9 @@ class ViewController: UIViewController {
     }
     
     func sendYO(){
-        
         if let username = getUserInputs().username{
-            
             ServerUtility.sentYO(username, callbackClosure: { (error: NSError?) -> () in
-                
                 if let errorSendYo = error{
-                    
                     let errorUserMeesage: String
                     if errorSendYo.code == kUserNotFound{
                         if let errorMsg = errorSendYo.userInfo?[kErrorMessageKey] as! String?{
@@ -135,7 +133,6 @@ class ViewController: UIViewController {
                     else{
                         errorUserMeesage = "There was an error, your YO isn't sent"
                     }
-                    
                     var alert = UIAlertController(title: "YO Error", message: errorUserMeesage, preferredStyle: .Alert)
                     alert.addAction(UIAlertAction(title: "Dissmis", style: .Default, handler: nil))
                     self.presentViewController(alert, animated: true, completion: nil)
@@ -148,7 +145,6 @@ class ViewController: UIViewController {
     }
     
     func recoverPassword(){
-        
         var alert = UIAlertController(title: "YO Password Reminder", message: "Please confirm your username and we will send you email for resetting your password.", preferredStyle: .Alert)
         alert.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
         alert.addAction(UIAlertAction(title: "Ok", style: .Default, handler: { (alertAction:UIAlertAction!) -> Void in
